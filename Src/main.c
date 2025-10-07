@@ -17,267 +17,112 @@
  */
 
 #include <stdio.h>
-#include <system_stm32f4xx.h>
-#include <stm32f401re.h>
-#include <stm32f401re_rcc.h>
-#include <stm32f401re_gpio.h>
 #include <stdint.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <timer.h>
-#include <Ucglib.h>
+#include <stm32f401re.h>
+#include <stm32f401re_rcc.h>  // thêm thư viện RCC cấp xung clock cho GPIO
+#include <stm32f401re_gpio.h> // thêm thư viện GPIO
+
 
 /* ================== Chân phần cứng ================== */
-#define LED_GPIOx       GPIOA
-#define LED_PIN         GPIO_Pin_5          // LD2
 
-#define BTN_GPIOx       GPIOC
-#define BTN_PIN         GPIO_Pin_13         // USER button
+#define BUTTON_PRESS                 0
+#define BUTTON_RELEASE               1
 
-#define BUZZ_GPIOx      GPIOA
-#define BUZZ_PIN        GPIO_Pin_6          // buzzer thụ động
+//Define LED
+#define LED_GPIO_PORT                GPIOA
+#define LED_GPIO_PIN                 GPIO_Pin_0
+#define LED_GPIO_CLOCK_EN            RCC_AHB1Periph_GPIOA
+//Define Button
+#define BUZZER_GPIO_PORT             GPIOC
+#define BUZZER_GPIO_PIN              GPIO_Pin_9
+#define BUZZER_GPIO_CLOCK_EN         RCC_AHB1Periph_GPIOC
+//Define Button
+#define BUTTON_GPIO_PORT             GPIOB
+#define BUTTON_GPIO_PIN              GPIO_Pin_3
+#define BUTTON_GPIO_CLOCK_EN         RCC_AHB1Periph_GPIOB
 
-/* ================== LCD (Ucglib) ================== */
-static ucg_t ucg;
+//Khai báo hàm nguyên mẫu
+static void mainInit(void);
+static void led_Init(void);
+static void buttonB2_Init(void);
+static void buzzer_Init(void);
 
-/* ================== Thời gian ================== */
-static inline uint32_t millis(void){
-    return GetMilSecTick();   // hoặc GetMilSecTick(), xem trong timer.h
-
+static void led_Init(void)
+{
+	//Khai báo GPIO kiểu structure
+	GPIO_InitTypeDef GPIO_InitStructure;
+	//Cấp xung Clock hoạt động cho Port A
+	RCC_AHB1PeriphClockCmd(LED_GPIO_CLOCK_EN, ENABLE);
+	//Cấu hình các thông số cho GPIO: Pin, Mode, Speed, OType, Pu/Pd
+	GPIO_InitStructure.GPIO_Pin = LED_GPIO_PIN;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+	//Khởi tạo các giá trị sử dụng hàm GPIO_Init
+	GPIO_Init(LED_GPIO_PORT, &GPIO_InitStructure);
 }
 
-/* ================== SPL helpers ================== */
-static void GPIO_Init_All(void){
-  // clock
-  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOC, ENABLE);
+static void buzzer_Init(void)
+{
+	GPIO_InitTypeDef GPIO_InitStructure;
 
-  GPIO_InitTypeDef gi;
+	RCC_AHB1PeriphClockCmd(BUZZER_GPIO_CLOCK_EN, ENABLE);
 
-  // LED: PA5
-  gi.GPIO_Pin   = LED_PIN;
-  gi.GPIO_Mode  = GPIO_Mode_OUT;
-  gi.GPIO_OType = GPIO_OType_PP;
-  gi.GPIO_PuPd  = GPIO_PuPd_NOPULL;
-  gi.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_Init(LED_GPIOx, &gi);
+	GPIO_InitStructure.GPIO_Pin = BUZZER_GPIO_PIN;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
 
-  // Buzzer: PA6
-  gi.GPIO_Pin   = BUZZ_PIN;
-  gi.GPIO_Mode  = GPIO_Mode_OUT;
-  gi.GPIO_OType = GPIO_OType_PP;
-  gi.GPIO_PuPd  = GPIO_PuPd_NOPULL;
-  gi.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_Init(BUZZ_GPIOx, &gi);
-
-  // Button: PC13 (kéo xuống – active HIGH)
-  gi.GPIO_Pin   = BTN_PIN;
-  gi.GPIO_Mode  = GPIO_Mode_IN;
-  gi.GPIO_OType = GPIO_OType_PP;
-  gi.GPIO_PuPd  = GPIO_PuPd_DOWN;
-  gi.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_Init(BTN_GPIOx, &gi);
+	GPIO_Init(BUZZER_GPIO_PORT, &GPIO_InitStructure);
 }
 
-static inline void LED_On(void)  { GPIO_SetBits(LED_GPIOx, LED_PIN); }
-static inline void LED_Off(void) { GPIO_ResetBits(LED_GPIOx, LED_PIN); }
-static inline void LED_Toggle(void){ GPIO_ToggleBits(LED_GPIOx, LED_PIN); }
-
-static inline uint8_t BTN_ReadRaw(void){
-  return GPIO_ReadInputDataBit(BTN_GPIOx, BTN_PIN) ? 1 : 0;
+static void buttonB2_Init(void)
+{
+	//Khai báo GPIO kiểu structure
+	GPIO_InitTypeDef GPIO_InitStructure;
+	//Cấp xung Clock hoạt động cho Port B
+	RCC_AHB1PeriphClockCmd(BUTTON_GPIO_CLOCK_EN, ENABLE);
+	//Cấu hình các thông số cho GPIO: Pin, Mode, Pu/Pd
+	//Chọn chân
+	GPIO_InitStructure.GPIO_Pin = BUTTON_GPIO_PIN;
+	//Chọn Mode Input
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+	// Trạng thái ban đầu kéo lên
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+	//Khởi tạo các giá trị cho GPIO
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
 }
 
-static void delay_ms(uint32_t d){
-  uint32_t t = millis();
-  while(millis() - t < d){ processTimerScheduler(); }
+static void mainInit(void)
+{
+    led_Init();
+    buzzer_Init();
+    buttonB2_Init();
+    // Tuỳ ý đặt trạng thái ban đầu
+    GPIO_ResetBits(LED_GPIO_PORT, LED_GPIO_PIN);
+    GPIO_ResetBits(BUZZER_GPIO_PORT, BUZZER_GPIO_PIN);
 }
 
-/* beep ~2 kHz trong duration_ms */
-static void buzzer_beep(uint16_t duration_ms){
-  uint32_t endt = millis() + duration_ms;
-  while((int32_t)(endt - millis()) > 0){
-    GPIO_ToggleBits(BUZZ_GPIOx, BUZZ_PIN);
-    for(volatile int i=0;i<40;i++) __NOP();   // chỉnh cho phù hợp buzzer
-  }
-  GPIO_ResetBits(BUZZ_GPIOx, BUZZ_PIN);
-}
+int main(void)
+{
+	// Initialize
+	mainInit();
 
-/* click detector (beep khi nhận nhấn) */
-static uint8_t read_button_click(void){
-  static uint8_t pressed_last = 0;
-  uint8_t p = BTN_ReadRaw();
-  uint8_t clicked = (p && !pressed_last);
-  pressed_last = p;
-  if(clicked) buzzer_beep(40);
-  return clicked;
-}
-
-/* ================== Game config ================== */
-typedef struct {
-  uint8_t pipe_gap;
-  uint8_t pipe_speed;
-  uint8_t gravity;
-  int8_t  flap_vel;
-  uint16_t step_ms;
-} level_cfg_t;
-
-static level_cfg_t LEVELS[2] = {
-  { .pipe_gap=26, .pipe_speed=2, .gravity=1, .flap_vel=-6, .step_ms=28 },
-  { .pipe_gap=22, .pipe_speed=3, .gravity=1, .flap_vel=-7, .step_ms=22 }
-};
-static uint8_t current_level = 0;
-
-/* ================== Flappy Bird ================== */
-typedef struct { int16_t x, y; int8_t vy; uint8_t r; } bird_t;
-typedef struct { int16_t x; int8_t gap_y; uint8_t scored; } pipe_t;
-
-/* điều chỉnh theo LCD thật của bạn */
-#define SCR_W 128
-#define SCR_H 64
-#define PLAY_X0 2
-#define PLAY_Y0 6
-#define PLAY_W (SCR_W - 4)
-#define PLAY_H (SCR_H - 10)
-
-static void clear_playfield(void){
-  ucg_SetColor(&ucg, 0, 0,0,0);
-  ucg_DrawBox(&ucg, 1, 1, SCR_W-3, SCR_H-3);
-  ucg_SetColor(&ucg, 0, 255,255,255);
-}
-
-static void draw_frame(uint16_t score){
-  ucg_SetColor(&ucg, 0, 255,255,255);
-  ucg_DrawFrame(&ucg, 0, 0, SCR_W-1, SCR_H-1);
-  char buf[10];
-  snprintf(buf,sizeof(buf),"%u",score);
-  ucg_DrawString(&ucg, 2, 10, 0, buf);
-}
-static void draw_bird(bird_t *b){ ucg_DrawDisc(&ucg, b->x, b->y, b->r, UCG_DRAW_ALL); }
-static void draw_pipe(pipe_t *p, uint8_t gap){
-  int top_h = p->gap_y - gap/2;
-  int bot_y = p->gap_y + gap/2;
-  if(top_h < 0) top_h = 0;
-  if(bot_y > PLAY_H) bot_y = PLAY_H;
-  ucg_DrawBox(&ucg, p->x, PLAY_Y0, 6, top_h);
-  ucg_DrawBox(&ucg, p->x, PLAY_Y0 + bot_y, 6, PLAY_H - bot_y);
-}
-static uint8_t collide(bird_t *b, pipe_t *p, uint8_t gap){
-  if(b->y - b->r <= PLAY_Y0 || b->y + b->r >= PLAY_Y0 + PLAY_H) return 1;
-  if(b->x + b->r >= p->x && b->x - b->r <= p->x + 6){
-    if(!(b->y > (p->gap_y - gap/2) && b->y < (p->gap_y + gap/2))) return 1;
-  }
-  return 0;
-}
-
-static void game_over_blink(uint8_t times){
-  for(uint8_t i=0;i<times;i++){
-    LED_On();  delay_ms(120);
-    LED_Off(); delay_ms(120);
-  }
-}
-
-static void splash_and_choose_level(void){
-  ucg_ClearScreen(&ucg);
-  ucg_SetFont(&ucg, ucg_font_helvR10_tf);
-  ucg_DrawString(&ucg, 14, 20, 0, "FLAPPY BIRD");
-  ucg_SetFont(&ucg, ucg_font_helvR08_tf);
-  ucg_DrawString(&ucg, 6, 36, 0, "Nhan ngan: START");
-  ucg_DrawString(&ucg, 6, 48, 0, "Giu 2s: DOI LEVEL");
-
-  char lv[20];
-  snprintf(lv, sizeof(lv), "LEVEL: %u", (unsigned)current_level+1);
-  ucg_DrawString(&ucg, 40, 60, 0, lv);
-
-  uint32_t hold_t = 0;
-  while(1){
-    processTimerScheduler();
-    if(BTN_ReadRaw()){
-      if(!hold_t) hold_t = millis();
-      if(millis() - hold_t > 2000){
-        current_level ^= 1;
-        ucg_SetColor(&ucg,0,0,0,0);
-        ucg_DrawBox(&ucg, 38, 52, 60, 12);
-        ucg_SetColor(&ucg,0,255,255,255);
-        snprintf(lv, sizeof(lv), "LEVEL: %u", (unsigned)current_level+1);
-        ucg_DrawString(&ucg, 40, 60, 0, lv);
-        hold_t = millis()+0x7FFFFFFF;
-      }
-    }else{
-      if(hold_t && (millis() - hold_t) < 600){ buzzer_beep(60); return; }
-      hold_t = 0;
-    }
-  }
-}
-
-static void run_game(void){
-  level_cfg_t L = LEVELS[current_level];
-  clear_playfield();
-
-  uint16_t score = 0;
-  bird_t bird = { .x = PLAY_X0 + 18, .y = PLAY_Y0 + PLAY_H/2, .vy = 0, .r = 3 };
-  pipe_t pipe = { .x = PLAY_X0 + PLAY_W - 2, .gap_y = PLAY_Y0 + 18, .scored = 0 };
-
-  uint32_t last_step = 0;
-  srand(millis());
-
-  while(1){
-    uint32_t now = millis();
-    if(now - last_step < L.step_ms){ processTimerScheduler(); continue; }
-    last_step = now;
-
-    if(read_button_click()) bird.vy = L.flap_vel;
-
-    bird.vy += L.gravity;
-    bird.y  += bird.vy;
-
-    pipe.x -= L.pipe_speed;
-    if(pipe.x < PLAY_X0 - 8){
-      pipe.x = PLAY_X0 + PLAY_W - 2;
-      int16_t miny = PLAY_Y0 + 10;
-      int16_t maxy = PLAY_Y0 + PLAY_H - 10;
-      pipe.gap_y = (rand() % (maxy - miny)) + miny;
-      pipe.scored = 0;
-    }
-
-    if(!pipe.scored && pipe.x + 6 < bird.x - bird.r){ score++; pipe.scored = 1; }
-
-    clear_playfield();
-    draw_frame(score);
-    draw_pipe(&pipe, L.pipe_gap);
-    draw_bird(&bird);
-
-    if(collide(&bird, &pipe, L.pipe_gap)){
-      ucg_SetFont(&ucg, ucg_font_helvR10_tf);
-      ucg_DrawString(&ucg, 26, 34, 0, "GAME OVER");
-      game_over_blink(6);
-      delay_ms(800);
-      return;
-    }
-  }
-}
-
-/* ================== MAIN ================== */
-int main(void){
-  SystemCoreClockUpdate();
-
-  // SysTick 1 ms
-  SysTick_Config(SystemCoreClock / 1000);
-
-  TimerInit();
-  GPIO_Init_All();
-
-  // LCD init
-  Ucglib4WireSWSPI_begin(&ucg, 0);   // hoặc 1 nếu muốn chế độ transparent
-  ucg_SetFont(&ucg, ucg_font_helvR12_tf);
-  ucg_ClearScreen(&ucg);
-  ucg_SetFont(&ucg, ucg_font_helvR08_tf);
-  ucg_SetColor(&ucg, 0, 255,255,255);
-  ucg_SetColor(&ucg, 1, 0,0,0);
-  ucg_SetRotate180(&ucg);   // bỏ nếu màn hình đúng chiều
-
-  // vòng đời chương trình
-  while(1){
-    splash_and_choose_level();
-    run_game();
-  }
+	while(1)
+	{
+		//Sử dụng hàm GPIO_ReadInputDataBit để đọc trạng thái đầu vào của nút nhấn
+		if(GPIO_ReadInputDataBit(BUTTON_GPIO_PORT, BUTTON_GPIO_PIN) == BUTTON_PRESS)
+		{
+			GPIO_SetBits (LED_GPIO_PORT, LED_GPIO_PIN);        //Turn ON Led
+			GPIO_SetBits (BUZZER_GPIO_PORT, BUZZER_GPIO_PIN);  //Turn ON Buzzer
+		}
+		else
+		{
+			GPIO_ResetBits (LED_GPIO_PORT, LED_GPIO_PIN);       //Turn OFF Led
+			GPIO_ResetBits (BUZZER_GPIO_PORT, BUZZER_GPIO_PIN); //Turn OFF Buzzer
+		}
+	}
 }
 
