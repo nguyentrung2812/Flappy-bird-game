@@ -1,0 +1,2 @@
+../Src/game/loop.c:22:13:game_over_blink	16	static
+../Src/game/loop.c:26:6:run_game	56	static

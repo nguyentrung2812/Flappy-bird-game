@@ -1,0 +1,10 @@
+../Src/periph/input.c:12:23:pin_read_active	1
+../Src/periph/input.c:19:16:btn_clicked	4
+../Src/periph/input.c:29:6:Input_Init	1
+../Src/periph/input.c:55:9:SW1_Click	1
+../Src/periph/input.c:56:9:SW2_Click	1
+../Src/periph/input.c:57:9:SW3_Click	1
+../Src/periph/input.c:58:9:SW4_Click	1
+../Src/periph/input.c:59:9:SW5_Click	1
+../Src/periph/input.c:61:9:SW3_Held	6
+../Src/periph/input.c:68:9:SW4_Held	6

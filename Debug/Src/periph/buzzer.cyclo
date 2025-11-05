@@ -1,0 +1,2 @@
+../Src/periph/buzzer.c:13:6:Buzzer_Init	1
+../Src/periph/buzzer.c:24:6:Buzzer_Beep	1
