@@ -1,7 +1,6 @@
 # 🐦 Flappy Bird – STM32 Nucleo-F401RE (SPL + Ucglib)
 
-Game **Flappy Bird** chạy trên **STM32 Nucleo-F401RE** với **OLED SPI** (Ucglib).  
-Điều khiển bằng **nút nhấn (SW1–SW5)**, có **buzzer** và **LED báo trạng thái**.
+Flappy Bird chạy trên **STM32 Nucleo-F401RE** với **màn hình LCDLCD** dùng  với **màn hình LCD** dùng.**UĐiều khiển bằng **5 nút nhấn (SW1–SW5)**, có **buzzer** và **LED báo trạng thái**.
 
 > **Vòng đời chương trình:** `MENU → RUN → GAME OVER → MENU`
 
@@ -9,20 +8,95 @@ Game **Flappy Bird** chạy trên **STM32 Nucleo-F401RE** với **OLED SPI** (Uc
 
 ## 🎮 Tính năng
 
-- 2 **mức độ khó (Level 1 & 2)**  
-- Nhấn ngắn để **bắt đầu** và **vỗ cánh**.  
-- **LED LD2 (PA11)** nháy khi *Game Over*.  
-- **Buzzer (PC9)** kêu khi thao tác.  
-- Ống sinh ngẫu nhiên, tính điểm khi vượt qua, kiểm tra va chạm.
+- **2 mức độ khó**: Level 1 & Level 2 (khác trọng lực / tốc độ và độ rộng ống).
+- **Menu chọn level + Start**.
+- **Buzzer (PC9)** kêu khi **jump**.
+- **LED (PA11)** nháy khi **Game Over**.
+- Ống sinh ngẫu nhiên theo trục Y, di chuyển ngang.
+- **Tính điểm nội bộ** (khi vượt qua ống) và **lưu `LAST SCORE`** để hiển thị ở menu ván sau.  
+  *(Không vẽ điểm trong lúc chơi, chỉ hiện `LAST SCORE` ở menu — đúng theo code hiện tại.)*
 
 ---
 
-## ⚙️ Cấu trúc dự án
+## 🧩 Phụ thuộc
 
-```
+- **STM32F4 SPL + CMSIS**
+- **Ucglib** (SPI mềm 4 dây)
+- **timer.h**
+  - `GetMilSecTick()`
+  - `processTimerScheduler()`
+  - `TimerInit()`
+
+---
+
+## 🪛 Phần cứng / Chân kết nối
+
+### LED & Buzzer
+
+| Thiết bị | Cổng | Ghi chú |
+|---|---|---|
+| LED | **PA11** | nháy khi Game Over |
+| Buzzer | **PC9** | kêu khi jump |
+
+### Nút nhấn (active-LOW, pull-up)
+
+| Nút | Cổng |
+|---|---|
+| SW1 | PB5 |
+| SW2 | PB3 *(chưa dùng)* |
+| SW3 | PA4 |
+| SW4 | PB0 *(chưa dùng)* |
+| SW5 | PB4 |
+
+### Màn hình
+
+- Ucglib SPI mềm 4 dây
+- **128×80** (viền trên/dưới vẽ bằng `DrawHLine` tại y=0 và y=79)
+
+---
+
+## 🕹️ Cách chơi
+
+### Menu
+
+- **SW3**: đổi **Level 1 ↔ Level 2**
+- **SW5**: di chuyển dấu `>` xuống **START**
+- **SW1**: quay lại chọn LEVEL khi đang đứng ở START
+- **SW3** tại START: bắt đầu game
+- Menu có **LAST SCORE** (điểm ván trước)
+
+### Trong game
+
+- **SW3**: jump (chim bay lên)
+- Chết → LED nháy → lưu `LAST SCORE` → về menu
+
+---
+
+## ⚙️ Tick thời gian & luồng xử lý
+
+- Dùng **TIM2 interrupt** tạo tick:
+  - Prescaler = 8399, Period = 199 → **~20ms/tick** (50Hz)
+
+- ISR TIM2:
+  1. Đọc jump (SW3) → set vận tốc bay lên
+  2. Cập nhật vật lý chim (gravity + velocity)
+  3. Tắt buzzer theo tick (không delay trong ISR)
+  4. Set cờ `render_needed = 1`
+
+- Main loop:
+  1. Khi `render_needed = 1` → cập nhật/vẽ ống
+  2. Vẽ sprite chim (xóa cũ, vẽ mới)
+  3. Tính điểm nội bộ (không vẽ)
+  4. Va chạm → game over → lưu last_score → menu
+
+---
+
+## 📁 Cấu trúc dự án
+
+```text
 .
 ├── Inc/
-│   ├── board_config.h        # Cấu hình chân, LCD, constants
+│   ├── board_config.h
 │   ├── drivers/
 │   │   ├── gpio.h
 │   │   └── timebase.h
@@ -39,7 +113,6 @@ Game **Flappy Bird** chạy trên **STM32 Nucleo-F401RE** với **OLED SPI** (Uc
 │       ├── collision.h
 │       ├── ui.h
 │       └── loop.h
-│
 ├── Src/
 │   ├── drivers/
 │   │   ├── gpio.c
@@ -56,62 +129,33 @@ Game **Flappy Bird** chạy trên **STM32 Nucleo-F401RE** với **OLED SPI** (Uc
 │   │   ├── collision.c
 │   │   ├── ui.c
 │   │   └── loop.c
-│   └── main.c                # Khởi tạo và vòng lặp chính
-│
-├── Startup/                  # system_stm32f4xx.c, startup_stm32f401xe.s
-├── Debug/                    # Thư mục build (CubeIDE)
-├── .project / .cproject      # Cấu hình Eclipse/CubeIDE
-├── Flappybirdgame.launch     # Cấu hình Debug (ST-Link)
-├── STM32F401RETX_FLASH.ld    # Linker script chạy từ Flash
-├── STM32F401RETX_RAM.ld      # Linker script chạy từ RAM
+│   └── main.c
+├── Startup/
+├── Debug/
+├── STM32F401RETX_FLASH.ld
 └── README.md
 ```
+## 🎨 Fix màu (RGB/BGR)
+MMột số màn LCD/driver bị đảo kênh màu (vàng hiển thị thành xanh/cyan).Trong board_config.h:
+
+#define LCD_IS_BGR  1
+
+Màu đúng → LCD_IS_BGR = 0
+
+Màu bị đảo → LCD_IS_BGR = 1
 
 ---
 
-## 🧩 Phụ thuộc
+## 🧪 Build & Flash
+Mở project bằng STM32CubeIDE
 
-- **STM32F4 SPL + CMSIS**  
-- **Ucglib** (SPI mềm 4 dây)  
-- **timer.h** (hàm `GetMilSecTick`, `processTimerScheduler`)  
+Build: Project → Build All
 
----
-
-## 🪛 Phần cứng mặc định
-
-| Thiết bị | Cổng | Ghi chú |
-|-----------|-------|----------|
-| LED | PA11 | LD2 – nháy khi *Game Over* |
-| Buzzer | PC9 | Buzzer thụ động |
-| SW1 | PB5 | Điều khiển |
-| SW2 | PB3 | Pause |
-| SW3 | PA4 | Đổi level / Start |
-| SW4 | PB0 | Giữ dài để chọn |
-| SW5 | PB4 | Di chuyển menu |
-| LCD | SPI mềm (Ucglib) | OLED 128×64 |
+Flash/Debug: Run/Debug qua ST-Link trên Nucleo
 
 ---
 
-## 🕹️ Cách chơi
+##🪪 License
 
-- **Menu:** giữ nút ~2 s để đổi level → nhấn để chọn.  
-- **Trong game:** nhấn SW1 hoặc SW5 để chim vỗ cánh bay lên.  
-- **Game Over:** hiện thông báo, LED nháy 6 lần → quay lại menu.
-
----
-
-## 🧠 Thuật toán chính
-
-1. **Tick thời gian** mỗi `step_ms`.  
-2. Đọc input → cập nhật vận tốc chim → áp dụng trọng lực.  
-3. Cập nhật vị trí ống → sinh mới khi ra khỏi màn hình.  
-4. Tính điểm, vẽ lại khung, chim, ống.  
-5. Nếu va chạm → hiện “GAME OVER” → nháy LED → trở về menu.
-
----
-
-## 🪪 Giấy phép
-
-**MIT License**  
-Cảm ơn **Ucglib**, **STM32 SPL/CMSIS**, **ST-Link/OpenOCD**, và cộng đồng STM32.  
+Cảm ơn Ucglib, STM32 SPL/CMSIS và cộng đồng STM32.
 
