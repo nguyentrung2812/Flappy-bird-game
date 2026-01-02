@@ -136,7 +136,7 @@ Flappy Bird chạy trên **STM32 Nucleo-F401RE** với **màn hình LCDLCD** dù
 └── README.md
 ```
 ## 🎨 Fix màu (RGB/BGR)
-MMột số màn LCD/driver bị đảo kênh màu (vàng hiển thị thành xanh/cyan).Trong board_config.h:
+Một số màn LCD/driver bị đảo kênh màu (vàng hiển thị thành xanh/cyan).Trong board_config.h:
 
 #define LCD_IS_BGR  1
 
@@ -155,7 +155,7 @@ Flash/Debug: Run/Debug qua ST-Link trên Nucleo
 
 ---
 
-##🪪 License
+## 🪪 License
 
 Cảm ơn Ucglib, STM32 SPL/CMSIS và cộng đồng STM32.
 
