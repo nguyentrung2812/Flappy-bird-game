@@ -1,0 +1,4 @@
+../Src/game/levels.c:8:13:draw_pipe1	32	static
+../Src/game/levels.c:16:13:draw_pipe2	32	static
+../Src/game/levels.c:25:6:levels_draw_pipe	16	static
+../Src/game/levels.c:30:9:levels_update_pipe	32	static

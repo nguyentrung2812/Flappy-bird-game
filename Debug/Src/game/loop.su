@@ -1,0 +1,7 @@
+../Src/game/loop.c:31:13:tim2_config_20ms	24	static
+../Src/game/loop.c:54:13:game_over_blink	16	static
+../Src/game/loop.c:62:13:game_over_handler	8	static
+../Src/game/loop.c:71:13:reset_run_and_redraw	8	static
+../Src/game/loop.c:95:6:game_init_state	8	static
+../Src/game/loop.c:100:6:TIM2_IRQHandler	8	static
+../Src/game/loop.c:131:6:game_run_forever	16	static
