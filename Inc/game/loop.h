@@ -1,3 +1,6 @@
-#pragma once
-void game_init_state(void);
-void game_run_forever(void);
+#ifndef GAME_LOOP_H
+#define GAME_LOOP_H
+
+void Game_RunForever(void);
+
+#endif

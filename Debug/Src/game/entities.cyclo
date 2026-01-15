@@ -1,0 +1,7 @@
+../Src/game/entities.c:9:6:Bird_Reset	1
+../Src/game/entities.c:15:7:Bird_GetY	1
+../Src/game/entities.c:16:9:Bird_GetY_Int	1
+../Src/game/entities.c:18:6:Buzzer_FireJump	1
+../Src/game/entities.c:24:6:Buzzer_OnTick	3
+../Src/game/entities.c:33:6:Bird_OnTick	4
+../Src/game/entities.c:49:6:Bird_SetJump	2

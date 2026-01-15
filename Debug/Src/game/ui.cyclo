@@ -1,1 +1,2 @@
-../Src/game/ui.c:9:6:ui_splash_and_choose_level	12
+../Src/game/ui.c:14:6:UI_SetLastScore	1
+../Src/game/ui.c:16:9:UI_Splash_ChooseLevel	14

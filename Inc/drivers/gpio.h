@@ -1,4 +1,6 @@
-#pragma once
-#include <stdint.h>
+#ifndef DRIVERS_GPIO_H
+#define DRIVERS_GPIO_H
 
-void drivers_gpio_init_all(void);
+void GPIO_AllClocks_Enable(void);
+
+#endif

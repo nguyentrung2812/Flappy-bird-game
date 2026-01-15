@@ -1,15 +1,29 @@
+#include <system_stm32f4xx.h>
+#include <timer.h>
+
 #include "drivers/timebase.h"
-#include "drivers/gpio.h"
 #include "gfx/lcd_init.h"
+
+#include "periph/led.h"
+#include "periph/buzzer.h"
+#include "periph/input.h"
+
 #include "game/loop.h"
 
-int main(void){
-  timebase_init();
-  drivers_gpio_init_all();
-  lcd_init();
+int main(void)
+{
+  SystemCoreClockUpdate();
+  SysTick_Config(SystemCoreClock / 1000);
 
-  game_init_state();
-  game_run_forever();
+  TimerInit();
 
-  while(1){}
+  LED_Init();
+  Buzzer_Init();
+  Input_Init();
+
+  LCD_Init_All();
+
+  Timebase_TIM2_Config_20ms();
+
+  Game_RunForever();
 }

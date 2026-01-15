@@ -1,3 +1,4 @@
-../Src/periph/led.c:5:6:led_on	1
-../Src/periph/led.c:6:6:led_off	1
-../Src/periph/led.c:7:6:led_toggle	1
+../Src/periph/led.c:7:6:LED_Init	1
+../Src/periph/led.c:20:6:LED_On	1
+../Src/periph/led.c:21:6:LED_Off	1
+../Src/periph/led.c:22:6:LED_Toggle	1

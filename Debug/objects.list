@@ -1,6 +1,7 @@
 "./Src/drivers/gpio.o"
 "./Src/drivers/timebase.o"
 "./Src/game/collision.o"
+"./Src/game/entities.o"
 "./Src/game/levels.o"
 "./Src/game/loop.o"
 "./Src/game/ui.o"

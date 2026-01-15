@@ -1,1 +1,1 @@
-../Src/game/collision.c:4:9:collision_check	24	static
+../Src/game/collision.c:4:9:check_collision	24	static

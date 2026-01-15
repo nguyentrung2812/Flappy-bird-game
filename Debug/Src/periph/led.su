@@ -1,3 +1,4 @@
-../Src/periph/led.c:5:6:led_on	8	static
-../Src/periph/led.c:6:6:led_off	8	static
-../Src/periph/led.c:7:6:led_toggle	8	static
+../Src/periph/led.c:7:6:LED_Init	16	static
+../Src/periph/led.c:20:6:LED_On	8	static
+../Src/periph/led.c:21:6:LED_Off	8	static
+../Src/periph/led.c:22:6:LED_Toggle	8	static

@@ -6,18 +6,21 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../Src/game/collision.c \
+../Src/game/entities.c \
 ../Src/game/levels.c \
 ../Src/game/loop.c \
 ../Src/game/ui.c 
 
 OBJS += \
 ./Src/game/collision.o \
+./Src/game/entities.o \
 ./Src/game/levels.o \
 ./Src/game/loop.o \
 ./Src/game/ui.o 
 
 C_DEPS += \
 ./Src/game/collision.d \
+./Src/game/entities.d \
 ./Src/game/levels.d \
 ./Src/game/loop.d \
 ./Src/game/ui.d 
@@ -30,7 +33,7 @@ Src/game/%.o Src/game/%.su Src/game/%.cyclo: ../Src/game/%.c Src/game/subdir.mk
 clean: clean-Src-2f-game
 
 clean-Src-2f-game:
-	-$(RM) ./Src/game/collision.cyclo ./Src/game/collision.d ./Src/game/collision.o ./Src/game/collision.su ./Src/game/levels.cyclo ./Src/game/levels.d ./Src/game/levels.o ./Src/game/levels.su ./Src/game/loop.cyclo ./Src/game/loop.d ./Src/game/loop.o ./Src/game/loop.su ./Src/game/ui.cyclo ./Src/game/ui.d ./Src/game/ui.o ./Src/game/ui.su
+	-$(RM) ./Src/game/collision.cyclo ./Src/game/collision.d ./Src/game/collision.o ./Src/game/collision.su ./Src/game/entities.cyclo ./Src/game/entities.d ./Src/game/entities.o ./Src/game/entities.su ./Src/game/levels.cyclo ./Src/game/levels.d ./Src/game/levels.o ./Src/game/levels.su ./Src/game/loop.cyclo ./Src/game/loop.d ./Src/game/loop.o ./Src/game/loop.su ./Src/game/ui.cyclo ./Src/game/ui.d ./Src/game/ui.o ./Src/game/ui.su
 
 .PHONY: clean-Src-2f-game
 

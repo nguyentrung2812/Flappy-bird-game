@@ -1,17 +1,17 @@
 #include "gfx/lcd_init.h"
-#include "board_config.h"
 
-ucg_t g_ucg;
+ucg_t ucg;
 
-void lcd_init(void){
-  Ucglib4WireSWSPI_begin(&g_ucg, 0);      // 0: normal
-  ucg_SetFont(&g_ucg, ucg_font_helvR12_tf);
-  ucg_ClearScreen(&g_ucg);
-  ucg_SetFont(&g_ucg, ucg_font_helvR08_tf);
+void LCD_Init_All(void)
+{
+  Ucglib4WireSWSPI_begin(&ucg, 0);
 
-  // set mặc định 2 color index cho text
-  ucg_SetColor(&g_ucg, 0, 255,255,255);
-  ucg_SetColor(&g_ucg, 1, 0,0,0);
+  ucg_SetFont(&ucg, ucg_font_helvR12_tf);
+  ucg_ClearScreen(&ucg);
 
-  ucg_SetRotate180(&g_ucg);              // bỏ nếu LCD đúng chiều
+  ucg_SetFont(&ucg, ucg_font_helvR08_tf);
+  UCG_SetRGB(0, 255, 255, 255);
+  UCG_SetRGB(1, 0, 0, 0);
+
+  ucg_SetRotate180(&ucg);
 }

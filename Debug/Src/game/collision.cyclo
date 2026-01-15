@@ -1,1 +1,1 @@
-../Src/game/collision.c:4:9:collision_check	8
+../Src/game/collision.c:4:9:check_collision	12

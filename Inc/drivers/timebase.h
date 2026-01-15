@@ -1,14 +1,12 @@
-#pragma once
+#ifndef DRIVERS_TIMEBASE_H
+#define DRIVERS_TIMEBASE_H
+
 #include <stdint.h>
 
-// Khởi tạo SysTick 1ms + Timer scheduler (TimerInit)
-void timebase_init(void);
+uint32_t millis(void);
+void delay_ms(uint32_t d);
 
-// Trả về ms tick
-uint32_t timebase_millis(void);
+/* TIM2 tick 20ms (50Hz) cho game */
+void Timebase_TIM2_Config_20ms(void);
 
-// Cho scheduler chạy (processTimerScheduler)
-void timebase_process(void);
-
-// Delay ms nhưng vẫn chạy scheduler
-void timebase_delay_ms(uint32_t ms);
+#endif

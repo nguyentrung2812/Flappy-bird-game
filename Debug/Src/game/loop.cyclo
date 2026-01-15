@@ -1,7 +1,5 @@
-../Src/game/loop.c:31:13:tim2_config_20ms	1
-../Src/game/loop.c:54:13:game_over_blink	2
-../Src/game/loop.c:62:13:game_over_handler	1
-../Src/game/loop.c:71:13:reset_run_and_redraw	1
-../Src/game/loop.c:95:6:game_init_state	1
-../Src/game/loop.c:100:6:TIM2_IRQHandler	8
-../Src/game/loop.c:131:6:game_run_forever	7
+../Src/game/loop.c:19:13:game_over_blink	2
+../Src/game/loop.c:30:13:reset_run_and_redraw	1
+../Src/game/loop.c:49:6:TIM2_IRQHandler	4
+../Src/game/loop.c:72:6:__Entities_SetJumpVelocity	2
+../Src/game/loop.c:84:6:Game_RunForever	7

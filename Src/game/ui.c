@@ -1,60 +1,100 @@
 #include "game/ui.h"
-#include "game/entities.h"
+
+#include "gfx/lcd_init.h"
 #include "gfx/render.h"
 #include "drivers/timebase.h"
 #include "periph/input.h"
+#include <timer.h>   // processTimerScheduler()
 
 #include <stdio.h>
 
-void ui_splash_and_choose_level(void){
-  const int MENU_X = 6;
+static uint16_t last_score = 0;
+static uint8_t  current_level = 1;
 
-  render_clear();
-  render_border();
+void UI_SetLastScore(uint16_t s) { last_score = s; }
 
-  render_menu_text("FLAPPY BIRD", MENU_X, 36);
-  render_menu_text("> LEVEL: 1",  11,     48);
-  render_menu_text("START",       20,     60);
+uint8_t UI_Splash_ChooseLevel(void)
+{
+#define MENU_X  6
 
-  char ls[28];
-  snprintf(ls, sizeof(ls), "LAST SCORE: %u", (unsigned)g_game.last_score);
-  render_menu_text(ls, MENU_X, 72);
+  ucg_ClearScreen(&ucg);
+
+  UCG_SetRGB(0, 255, 255, 255);
+  ucg_DrawHLine(&ucg, 0, 0, 128);
+  ucg_DrawHLine(&ucg, 0, 79, 128);
+
+  /* mini pipe + bird */
+  UCG_SetRGB(0, 255, 255, 255);
+
+  int16_t px      = 102;
+  int16_t topY    = 6;
+  int16_t bottomY = 74;
+  int16_t gap_c   = 34;
+  int16_t gap     = 14;
+
+  int16_t h_top = (gap_c - gap) - topY;
+  if (h_top > 0) ucg_DrawBox(&ucg, px, topY, 10, h_top);
+
+  int16_t y_bot = gap_c + gap;
+  int16_t h_bot = bottomY - y_bot;
+  if (h_bot > 0) ucg_DrawBox(&ucg, px, y_bot, 10, h_bot);
+
+  Bird_DrawAt(16, 16);
+
+  ucg_SetFont(&ucg, ucg_font_helvR08_tf);
+
+  UCG_SetRGB(0, 255, 255, 255);
+  ucg_DrawString(&ucg, MENU_X, 36, 0, "FLAPPY BIRD");
+  ucg_DrawString(&ucg, 11, 48, 0, "> LEVEL: 1");
+  ucg_DrawString(&ucg, 20, 60, 0, "START");
+
+  char ls[24];
+  snprintf(ls, sizeof(ls), "LAST SCORE: %u", (unsigned)last_score);
+  ucg_DrawString(&ucg, MENU_X, 72, 0, ls);
 
   char lv[8];
-  snprintf(lv, sizeof(lv), "%u", (unsigned)g_game.current_level);
-  render_menu_text(lv, 59, 48);
+  snprintf(lv, sizeof(lv), "%u", (unsigned)current_level);
+  ucg_DrawString(&ucg, 59, 48, 0, lv);
 
-  uint8_t a = 1; // 1=LEVEL, 2=START
+  delay_ms(30);                 // cho LCD settle (nhẹ)
+  processTimerScheduler();      // bơm scheduler 1 nhịp
 
-  while(1){
-    switch(a){
+  uint8_t a = 1; // 1: LEVEL, 2: START
+
+  while (1)
+  {
+    processTimerScheduler();    //  bơm scheduler liên tục trong menu
+
+    switch (a)
+    {
       case 1:
-        while(1){
-          timebase_process();
+        while (1)
+        {
+          processTimerScheduler();
 
-          if(sw3_click() || sw3_held(600)){
-            g_game.current_level = (g_game.current_level==1) ? 2 : 1;
+          if (SW3_Click() || SW3_Held(600))
+          {
+            current_level = (current_level == 1) ? 2 : 1;
+            delay_ms(100);
 
-            snprintf(lv, sizeof(lv), "%u", (unsigned)g_game.current_level);
-            RENDER_SetRGB(0, 0,0,0);
-            ucg_DrawBox(&g_ucg, 59, 40, 6, 8);
-            RENDER_SetRGB(0, 255,255,255);
-            ucg_DrawString(&g_ucg, 59, 48, 0, lv);
-
-            timebase_delay_ms(100);
+            snprintf(lv, sizeof(lv), "%u", (unsigned)current_level);
+            UCG_SetRGB(0, 0, 0, 0);
+            ucg_DrawBox(&ucg, 59, 40, 6, 8);
+            UCG_SetRGB(0, 255, 255, 255);
+            ucg_DrawString(&ucg, 59, 48, 0, lv);
           }
 
-          if(sw5_click() || sw5_held(600)){
-            timebase_delay_ms(100);
+          if (SW5_Click() || SW5_Held(600))
+          {
+            delay_ms(100);
 
-            // xóa '>' ở LEVEL
-            RENDER_SetRGB(0, 0,0,0);
-            ucg_DrawBox(&g_ucg, 11, 40, 6, 8);
-            // vẽ '>' ở START
-            RENDER_SetRGB(0, 255,255,255);
-            ucg_DrawString(&g_ucg, 11, 60, 0, ">");
+            UCG_SetRGB(0, 0, 0, 0);
+            ucg_DrawBox(&ucg, 11, 40, 6, 8);
 
-            timebase_delay_ms(100);
+            UCG_SetRGB(0, 255, 255, 255);
+            ucg_DrawString(&ucg, 11, 60, 0, ">");
+
+            delay_ms(100);
             a = 2;
             break;
           }
@@ -62,26 +102,35 @@ void ui_splash_and_choose_level(void){
         break;
 
       case 2:
-        while(1){
-          if(sw3_click() || sw3_held(600)){
-            timebase_delay_ms(100);
-            return; // start game
+        while (1)
+        {
+          processTimerScheduler();
+
+          if (SW3_Click() || SW3_Held(600))
+          {
+            delay_ms(100);
+            return current_level;
           }
-          if(sw1_click() || sw1_held(600)){
-            timebase_delay_ms(100);
 
-            // xóa '>' ở START
-            RENDER_SetRGB(0, 0,0,0);
-            ucg_DrawBox(&g_ucg, 11, 52, 6, 8);
-            // vẽ '>' ở LEVEL
-            RENDER_SetRGB(0, 255,255,255);
-            ucg_DrawString(&g_ucg, 11, 48, 0, ">");
+          if (SW1_Click() || SW1_Held(600))
+          {
+            delay_ms(100);
 
-            timebase_delay_ms(100);
+            UCG_SetRGB(0, 0, 0, 0);
+            ucg_DrawBox(&ucg, 11, 52, 6, 8);
+
+            UCG_SetRGB(0, 255, 255, 255);
+            ucg_DrawString(&ucg, 11, 48, 0, ">");
+
+            delay_ms(100);
             a = 1;
             break;
           }
         }
+        break;
+
+      default:
+        a = 1;
         break;
     }
   }

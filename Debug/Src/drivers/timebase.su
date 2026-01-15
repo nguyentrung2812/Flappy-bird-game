@@ -1,6 +1,3 @@
-C:/ThuVien_SDK_1.0.3_NUCLEO-F401RE-master/shared/Drivers/CMSIS/Include/core_cm4.h:1629:22:NVIC_SetPriority	16	static
-C:/ThuVien_SDK_1.0.3_NUCLEO-F401RE-master/shared/Drivers/CMSIS/Include/core_cm4.h:1760:26:SysTick_Config	16	static
-../Src/drivers/timebase.c:8:6:timebase_init	8	static
-../Src/drivers/timebase.c:14:10:timebase_millis	8	static
-../Src/drivers/timebase.c:18:6:timebase_process	8	static
-../Src/drivers/timebase.c:22:6:timebase_delay_ms	24	static
+../Src/drivers/timebase.c:9:10:millis	8	static
+../Src/drivers/timebase.c:14:6:delay_ms	24	static
+../Src/drivers/timebase.c:23:6:Timebase_TIM2_Config_20ms	24	static

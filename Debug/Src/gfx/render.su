@@ -1,6 +1,4 @@
-../Src/gfx/render.c:14:6:render_clear	8	static
-../Src/gfx/render.c:18:6:render_border	16	static
-../Src/gfx/render.c:24:6:render_menu_text	32	static
-../Src/gfx/render.c:30:6:render_bird_erase	24	static
-../Src/gfx/render.c:35:6:render_bird_draw	40	static
-../Src/gfx/render.c:57:6:render_bird_update	16	static
+../Src/gfx/render.c:16:6:Render_DrawFrameLines	16	static
+../Src/gfx/render.c:23:6:Bird_EraseAt	24	static
+../Src/gfx/render.c:29:6:Bird_DrawAt	40	static
+../Src/gfx/render.c:60:6:Bird_UpdateSprite	16	static
