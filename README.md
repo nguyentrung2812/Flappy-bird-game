@@ -10,7 +10,7 @@ Game **Flappy Bird** chạy trên **STM32 Nucleo-F401RE** với **OLED SPI** (Uc
 ## 🎮 Tính năng
 
 - 2 **mức độ khó (Level 1 & 2)**  
-- Nhấn ngắn để **bắt đầu** và **vỗ cánh**.  
+- Nhấn **SW3** để **bắt đầu** và **đổi level**.  
 - **LED LD2 (PA11)** nháy khi *Game Over*.  
 - **Buzzer (PC9)** kêu khi thao tác.  
 - Ống sinh ngẫu nhiên, tính điểm khi vượt qua, kiểm tra va chạm.
@@ -22,48 +22,49 @@ Game **Flappy Bird** chạy trên **STM32 Nucleo-F401RE** với **OLED SPI** (Uc
 ```
 .
 ├── Inc/
-│   ├── board_config.h        # Cấu hình chân, LCD, constants
-│   ├── drivers/
-│   │   ├── gpio.h
-│   │   └── timebase.h
-│   ├── periph/
-│   │   ├── led.h
-│   │   ├── buzzer.h
-│   │   └── input.h
-│   ├── gfx/
-│   │   ├── lcd_init.h
-│   │   └── render.h
-│   └── game/
-│       ├── entities.h
-│       ├── levels.h
-│       ├── collision.h
-│       ├── ui.h
-│       └── loop.h
+│ ├── board_config.h # Cấu hình chân, LCD, constants
+│ ├── drivers/
+│ │ ├── gpio.h
+│ │ └── timebase.h
+│ ├── periph/
+│ │ ├── led.h
+│ │ ├── buzzer.h
+│ │ └── input.h
+│ ├── gfx/
+│ │ ├── lcd_init.h
+│ │ └── render.h
+│ └── game/
+│ ├── entities.h
+│ ├── levels.h
+│ ├── collision.h
+│ ├── ui.h
+│ └── loop.h
 │
 ├── Src/
-│   ├── drivers/
-│   │   ├── gpio.c
-│   │   └── timebase.c
-│   ├── periph/
-│   │   ├── led.c
-│   │   ├── buzzer.c
-│   │   └── input.c
-│   ├── gfx/
-│   │   ├── lcd_init.c
-│   │   └── render.c
-│   ├── game/
-│   │   ├── levels.c
-│   │   ├── collision.c
-│   │   ├── ui.c
-│   │   └── loop.c
-│   └── main.c                # Khởi tạo và vòng lặp chính
+│ ├── drivers/
+│ │ ├── gpio.c
+│ │ └── timebase.c
+│ ├── periph/
+│ │ ├── led.c
+│ │ ├── buzzer.c
+│ │ └── input.c
+│ ├── gfx/
+│ │ ├── lcd_init.c
+│ │ └── render.c
+│ ├── game/
+│ │ ├── levels.c
+│ │ ├── collision.c
+│ │ ├── ui.c
+│ │ ├── loop.c
+│ │ └── entities.c 
+│ └── main.c 
 │
-├── Startup/                  # system_stm32f4xx.c, startup_stm32f401xe.s
-├── Debug/                    # Thư mục build (CubeIDE)
-├── .project / .cproject      # Cấu hình Eclipse/CubeIDE
-├── Flappybirdgame.launch     # Cấu hình Debug (ST-Link)
-├── STM32F401RETX_FLASH.ld    # Linker script chạy từ Flash
-├── STM32F401RETX_RAM.ld      # Linker script chạy từ RAM
+├── Startup/ # system_stm32f4xx.c, startup_stm32f401xe.s
+├── Debug/ # Thư mục build (CubeIDE)
+├── .project / .cproject # Cấu hình Eclipse/CubeIDE
+├── Flappybirdgame.launch # Cấu hình Debug (ST-Link)
+├── STM32F401RETX_FLASH.ld # Linker script chạy từ Flash
+├── STM32F401RETX_RAM.ld # Linker script chạy từ RAM
 └── README.md
 ```
 
@@ -83,10 +84,10 @@ Game **Flappy Bird** chạy trên **STM32 Nucleo-F401RE** với **OLED SPI** (Uc
 |-----------|-------|----------|
 | LED | PA11 | LD2 – nháy khi *Game Over* |
 | Buzzer | PC9 | Buzzer thụ động |
-| SW1 | PB5 | Điều khiển |
-| SW2 | PB3 | Pause |
-| SW3 | PA4 | Đổi level / Start |
-| SW4 | PB0 | Giữ dài để chọn |
+| SW1 | PB5 | Nút nhấn 1 |
+| SW2 | PB3 | Nút nhấn 2 |
+| SW3 | PA4 | **Bắt đầu chơi / Đổi level** |
+| SW4 | PB0 | Giữ lâu để chọn |
 | SW5 | PB4 | Di chuyển menu |
 | LCD | SPI mềm (Ucglib) | OLED 128×64 |
 
@@ -94,9 +95,9 @@ Game **Flappy Bird** chạy trên **STM32 Nucleo-F401RE** với **OLED SPI** (Uc
 
 ## 🕹️ Cách chơi
 
-- **Menu:** giữ nút ~2 s để đổi level → nhấn để chọn.  
-- **Trong game:** nhấn SW1 hoặc SW5 để chim vỗ cánh bay lên.  
-- **Game Over:** hiện thông báo, LED nháy 6 lần → quay lại menu.
+- **Menu:** Nhấn **SW3** để đổi **level**.  
+- **Trong game:** Nhấn **SW3** để **bắt đầu chơi** và **vỗ cánh** (chim bay lên).  
+- **Game Over:** Sau khi chim va chạm hoặc chạm sàn/trần, LED LD2 nháy 6 lần, sau đó quay lại **menu**.
 
 ---
 
@@ -113,5 +114,4 @@ Game **Flappy Bird** chạy trên **STM32 Nucleo-F401RE** với **OLED SPI** (Uc
 ## 🪪 Giấy phép
 
 **MIT License**  
-Cảm ơn **Ucglib**, **STM32 SPL/CMSIS**, **ST-Link/OpenOCD**, và cộng đồng STM32.  
-
+Cảm ơn **Ucglib**, **STM32 SPL/CMSIS**, **ST-Link/OpenOCD**, và cộng đồng STM32.
